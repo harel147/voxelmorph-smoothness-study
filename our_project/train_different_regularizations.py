@@ -138,6 +138,8 @@ for regu in regularizations:
     best_model_path = os.path.join(model_dir_regu, 'best_model.pt')
 
     # training loops
+    epoch_total_loss_per_epoch = []
+    val_loss_per_epoch = []
     for epoch in range(args.initial_epoch, args.epochs):
 
         epoch_loss = []
@@ -178,6 +180,8 @@ for regu in regularizations:
             # get compute time
             epoch_step_time.append(time.time() - step_start_time)
 
+        epoch_total_loss_per_epoch.append(epoch_total_loss)
+
         # Validation loss calculation
         model.eval()
         with torch.no_grad():
@@ -196,6 +200,8 @@ for regu in regularizations:
 
             mean_val_loss = np.mean(val_losses)
         model.train()
+
+        val_loss_per_epoch.append(mean_val_loss)
 
         # print epoch info
         epoch_info = 'Epoch %d/%d' % (epoch + 1, args.epochs)
@@ -257,6 +263,23 @@ for regu in regularizations:
         plt.title(f'Flow (x-dir) for regularization={regu}, sample {i}')
         plt.savefig(os.path.join(model_dir_regu, f'flow_sample_{i}.png'))
         plt.close()
+
+    # Save loss curves
+    epochs_range = range(args.initial_epoch, args.epochs)
+    train_losses = [np.mean(l) for l in epoch_total_loss_per_epoch]
+    val_losses = val_loss_per_epoch  # already a list
+
+    plt.figure()
+    plt.plot(epochs_range, train_losses, label='Train Loss')
+    plt.plot(epochs_range, val_losses, label='Val Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title(f'Loss Curves - Regularization: {regu}')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(os.path.join(model_dir_regu, 'loss_curve.png'))
+    plt.close()
 
 results_df = pd.DataFrame(results)
 results_df.to_csv(os.path.join(args.model_dir, "regularizations", "summary.csv"), index=False)
