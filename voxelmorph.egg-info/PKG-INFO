@@ -1,0 +1,28 @@
+Metadata-Version: 2.4
+Name: voxelmorph
+Version: 0.2
+Summary: Image Registration with Convolutional Networks
+Home-page: https://github.com/voxelmorph/voxelmorph
+License: Apache 2.0
+Keywords: deformation,registration,imaging,cnn,mri
+Classifier: Intended Audience :: Science/Research
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+License-File: LICENSE.md
+Requires-Dist: packaging
+Requires-Dist: scikit-image
+Requires-Dist: h5py
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: nibabel
+Requires-Dist: neurite>=0.2
+Dynamic: classifier
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: license
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
