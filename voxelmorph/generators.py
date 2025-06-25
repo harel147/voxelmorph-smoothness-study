@@ -68,6 +68,17 @@ def volgen(
         yield tuple(vols)
 
 
+def fixed_scan_pairs(vol_names, pair_indices, **kwargs):
+    vols = [py.utils.load_volfile(f, **kwargs) for f in vol_names]
+    while True:
+        for i, j in pair_indices:
+            src = np.expand_dims(vols[i], axis=0)  # [1, H, W, (D), C]
+            tgt = np.expand_dims(vols[j], axis=0)
+            shape = src.shape[1:-1]
+            zeros = np.zeros((1, *shape, len(shape)))
+            yield [src, tgt], [tgt, zeros]
+
+
 def scan_to_scan(vol_names, bidir=False, batch_size=1, prob_same=0, no_warp=False, **kwargs):
     """
     Generator for scan-to-scan registration.

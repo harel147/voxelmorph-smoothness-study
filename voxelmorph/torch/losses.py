@@ -95,42 +95,35 @@ class Grad:
     N-D gradient loss.
     """
 
-    # def __init__(self, penalty='l1', loss_mult=None):
-    #     self.penalty = penalty
-    #     self.loss_mult = loss_mult
-    #
-    # def loss(self, _, y_pred):
-    #     dy = torch.abs(y_pred[:, :, 1:, :, :] - y_pred[:, :, :-1, :, :])
-    #     dx = torch.abs(y_pred[:, :, :, 1:, :] - y_pred[:, :, :, :-1, :])
-    #     dz = torch.abs(y_pred[:, :, :, :, 1:] - y_pred[:, :, :, :, :-1])
-    #
-    #     if self.penalty == 'l2':
-    #         dy = dy * dy
-    #         dx = dx * dx
-    #         dz = dz * dz
-    #
-    #     d = torch.mean(dx) + torch.mean(dy) + torch.mean(dz)
-    #     grad = d / 3.0
-    #
-    #     if self.loss_mult is not None:
-    #         grad *= self.loss_mult
-    #     return grad
-
     # for 2D images
     def __init__(self, penalty='l1', loss_mult=None):
         self.penalty = penalty
         self.loss_mult = loss_mult
 
     def loss(self, _, y_pred):
-        dy = torch.abs(y_pred[:, :, 1:, :] - y_pred[:, :, :-1, :])
-        dx = torch.abs(y_pred[:, :, :, 1:] - y_pred[:, :, :, :-1])
+        if self.penalty in ['l1', 'l2']:
+            dy = y_pred[:, :, 1:, :] - y_pred[:, :, :-1, :]
+            dx = y_pred[:, :, :, 1:] - y_pred[:, :, :, :-1]
 
-        if self.penalty == 'l2':
-            dy = dy * dy
-            dx = dx * dx
+            if self.penalty == 'l1':
+                dy = torch.abs(dy)
+                dx = torch.abs(dx)
+            elif self.penalty == 'l2':
+                dy = dy * dy
+                dx = dx * dx
 
-        d = torch.mean(dx) + torch.mean(dy)
-        grad = d / 2.0
+            d = torch.mean(dx) + torch.mean(dy)
+            grad = d / 2.0
+
+        elif self.penalty == 'bend':
+            ddy = y_pred[:, :, 2:, :] - 2 * y_pred[:, :, 1:-1, :] + y_pred[:, :, :-2, :]
+            ddx = y_pred[:, :, :, 2:] - 2 * y_pred[:, :, :, 1:-1] + y_pred[:, :, :, :-2]
+            ddy2 = ddy * ddy
+            ddx2 = ddx * ddx
+            grad = (torch.mean(ddx2) + torch.mean(ddy2)) / 2.0
+
+        else:
+            raise ValueError(f"Unknown penalty type: {self.penalty}")
 
         if self.loss_mult is not None:
             grad *= self.loss_mult

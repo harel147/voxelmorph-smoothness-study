@@ -51,13 +51,14 @@ parser.add_argument('--image-loss', default='mse',
 parser.add_argument('--reg-loss', default='l2', help='regularization loss type')
 args = parser.parse_args()
 
-lambda_values = [0.001, 0.005, 0.01, 0.05, 0.1, 0.5]
+lamb = 0.01
+regularizations = ['l2', 'l1', 'bend']
 
 results = []
-for lamb in lambda_values:
-    print(f"start lambda {lamb}")
-    model_dir_lambda = os.path.join(args.model_dir, "sweep_lambda", f"lambda_{lamb}")
-    os.makedirs(model_dir_lambda, exist_ok=True)
+for regu in regularizations:
+    print(f"start regularization {regu}")
+    model_dir_regu = os.path.join(args.model_dir, "regularizations", f"regu_{regu}")
+    os.makedirs(model_dir_regu, exist_ok=True)
 
     # load and prepare data
     train_img_list = os.path.join(os.path.dirname(os.path.abspath(__file__)).replace("our_project", ""), 'OASIS_DATASET', 'train_list.txt')
@@ -129,12 +130,12 @@ for lamb in lambda_values:
     weights = [1]
 
     # prepare deformation loss
-    losses += [vxm.losses.Grad(args.reg_loss, loss_mult=args.int_downsize).loss]
+    losses += [vxm.losses.Grad(regu, loss_mult=args.int_downsize).loss]
     weights += [lamb]
 
     best_val_loss = float('inf')
     train_loss_of_best_val_loss = float('inf')
-    best_model_path = os.path.join(model_dir_lambda, 'best_model.pt')
+    best_model_path = os.path.join(model_dir_regu, 'best_model.pt')
 
     # training loops
     for epoch in range(args.initial_epoch, args.epochs):
@@ -233,7 +234,7 @@ for lamb in lambda_values:
         jacobians.append(np.mean(jac_det <= 0))  # % non-positive determinant
 
     results.append({
-        'lambda': lamb,
+        'regularization': regu,
         'val_loss': best_val_loss,
         'train_loss': train_loss_of_best_val_loss,
         'nonpositive_jacobian_mean': np.mean(jacobians)
@@ -253,9 +254,9 @@ for lamb in lambda_values:
 
         plt.imshow(flow[..., 0], cmap='coolwarm')  # show x-displacement
         plt.colorbar()
-        plt.title(f'Flow (x-dir) for lambda={lamb}, sample {i}')
-        plt.savefig(os.path.join(model_dir_lambda, f'flow_sample_{i}.png'))
+        plt.title(f'Flow (x-dir) for regularization={regu}, sample {i}')
+        plt.savefig(os.path.join(model_dir_regu, f'flow_sample_{i}.png'))
         plt.close()
 
 results_df = pd.DataFrame(results)
-results_df.to_csv(os.path.join(args.model_dir, "sweep_lambda", "summary.csv"), index=False)
+results_df.to_csv(os.path.join(args.model_dir, "regularizations", "summary.csv"), index=False)
