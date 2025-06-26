@@ -11,6 +11,8 @@ We evaluate each experiment using:
 - **Validation MSE Loss**: Measures alignment accuracy between registered image pairs.
 - **Percentage of Non-Positive Jacobians**: Indicates local folding or irregularities in the deformation field (lower is smoother/more plausible).
 
+A detailed summary of our findings, including analysis, and visualizations is available in our [**project report**](https://github.com/harel147/voxelmorph-smoothness-study/blob/main/our_project/VoxelMorph_Smoothness_Study_Course_Project.pdf).  
+
 ---
 
 ## Setup Instructions
